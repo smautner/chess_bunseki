@@ -30,18 +30,18 @@ def update_version_py():
 
 
     except EnvironmentError:
-        print("unable to run git, leaving chess_bunseki/_version.py alone")
+        print("unable to run git, leaving bunseki/_version.py alone")
         return
     stdout = p.communicate()[0]
     if p.returncode != 0:
-        print("unable to run git, leavi chess_bunseki/_version.py alone")
+        print("unable to run git, leavi bunseki/_version.py alone")
         return
-    ver = "0.0."+stdout.strip()
+    ver = "0.0."+str(stdout.strip())
     #ver = str(int(ver,16)) # pypi doesnt like base 16
-    f = open("chess_bunseki/_version.py", "w")
+    f = open("bunseki/_version.py", "w")
     f.write(VERSION_PY % ver)
     f.close()
-    print("set chess_bunseki/_version.py to '%s'" % ver)
+    print("set bunseki/_version.py to '%s'" % ver)
 
 
 def get_version():
