@@ -1,6 +1,6 @@
 import chess.pgn
-import util
-import asklichess as ali
+import bunseki.util as util
+import bunseki.asklichess as ali
 
 import argparse
 
