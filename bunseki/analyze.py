@@ -46,7 +46,7 @@ def main():
     moves, total_games = h.call( lambda: ali.ask(fen,args),fen)
     game.proba = 1
     if args.COLOR ==0:
-        proba_calculation(game, moves, movesum)
+        proba_calculation(game, moves, total_games)
 
     ###############
     # for fens get the game-node and lichess-db answer
