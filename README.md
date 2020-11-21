@@ -14,13 +14,16 @@ pip install bunseki
 
 # whites perspective, missing moves musst have been played at least 500 times 
 # make sure my repertoire covers 60% of opponents responses
-bunseki  -o lichessstudy_white.pgn -w 1 -m 500 -c 60  
+bunseki  -o lichessstudy_white.pgn -w 1 -m 500 -c 60 
+
+# to check against lichess user database instead of the masters 
+-d 1  -s 1600 1800 -t blitz rapid 
 ```
 
 # example
 
 
-![''](https://raw.githubusercontent.com/smautner/chess_bunseki/master/output.png)'
+![''](https://raw.githubusercontent.com/smautner/chess_bunseki/master/output.png)
 
 * we see move frequency, included moves are marked with 'OK' and win distribution in [white draw black]. 
 * the example repertoire has only the main moves, which cover less than 60% of moves
