@@ -19,7 +19,10 @@ parser.add_argument('-t','--lichess_format',dest='TIMECTL', help= 'select time c
 def proba_calculation(gn, moves, movesum):
     movcntdi = { m['san']:ali.sumdi(m)  for m in moves}
     for child in gn.variations: #  i could calculate the percentage of games that end up here...
-        child.proba = movcntdi[child.san()]/ movesum
+        if movesum == 0: 
+            child.proba = 0
+        else:
+            child.proba = movcntdi.get(child.san(),0)/ movesum
 
 
 def main(): 
