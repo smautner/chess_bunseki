@@ -12,8 +12,9 @@ on the lichess database.
 pip install bunseki
 
 
-# whites perspective, ignores moves played < 500x, make sure my repertoire covers 60% of opponents responses
-bunseki  -o example2.pgn -w 1 -m 500 -c 60  
+# whites perspective, missing moves musst have been played at least 500 times 
+# make sure my repertoire covers 60% of opponents responses
+bunseki  -o lichessstudy_white.pgn -w 1 -m 500 -c 60  
 ```
 
 # example
@@ -21,11 +22,14 @@ bunseki  -o example2.pgn -w 1 -m 500 -c 60
 
 ![''](https://raw.githubusercontent.com/smautner/chess_bunseki/master/output.png)'
 
-* i have only the most played move in my repertoire and that doesnt cover 60% of moves in the database
+* we see move frequency, included moves are marked with 'OK' and win distribution in [white draw black]. 
+* the example repertoire has only the main moves, which cover less than 60% of moves
 
 
 
 # strange stuff 
 
-i would have liked to use UCI notation to communicate between python-chess and lichess
+* i would have liked to use UCI notation to communicate between python-chess and lichess
 but they use different notation for castles.
+
+* python-chess requires python > 3.7
