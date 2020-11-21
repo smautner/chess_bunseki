@@ -68,26 +68,50 @@ def main():
     ##########################
 
     # sort by node weight
-    keys = list(fens.keys())
-    keys.sort(key = lambda x: fens[x][0][1], reverse = True)
-    
-    for k in keys: 
+    #keys = list(fens.keys())
+    #keys.sort(key = lambda x: fens[x][0][1], reverse = True)
+    bunsekitachi = []
+
+    for k in fens.keys(): 
         mo_s_gn_li  = fens[k]
         # all the moves from all game nodes that share the fen
         enemy_moves = [str(v.san()) for mosgn in mo_s_gn_li  for v in  mosgn[2].variations]
-        
-        res = ali.analyse(mo_s_gn_li[0][0],enemy_moves, minmov=args.MINMOV, minperc= args.MINPERC/100)
-        gn = mo_s_gn_li[0][2]
+        res,num = ali.analyse(mo_s_gn_li[0][0],enemy_moves, minmov=args.MINMOV, minperc= args.MINPERC/100)
+
         if res: 
-            #
-            if args.COLOR ==1:
-                print(gn.board().unicode(empty_square=' ',invert_color=True))
-            else:
-                print(gn.board().transform(chess.flip_vertical).transform(chess.flip_horizontal).unicode(empty_square=' ',invert_color=True))
-            print(res)
-            print()
-            for mosgn in mo_s_gn_li:
-                print(util.pgn(mosgn[2]))
-            print(gn.board().fen())
-            print(f"https://lichess.org/analysis/{k.replace(' ','_')}")
-            print("\n\n\n")
+            bunsekitachi.append(bunseki( [e[2] for e in mo_s_gn_li ]  ,args.COLOR, res,num   ))
+
+    bunsekitachi.sort(key = lambda x: x.weight)
+
+    for e in bunsekitachi: 
+        e.print()
+        
+
+
+
+
+class bunseki():
+    def __init__(self,gn,color,res_str,weight):
+        self.gn = gn
+        self.color= color
+        self.moves=res_str
+        self.weight = weight
+        self.board = gn[0].board()
+
+
+    def print(self):
+        if self.color ==1:
+            print(self.board.unicode(empty_square=' ',invert_color=True))
+        else:
+            print(self.board.transform(chess.flip_vertical).transform(chess.flip_horizontal).unicode(empty_square=' ',invert_color=True))
+
+        print (self.moves)
+        print ()
+            
+        for node in self.gn:
+            print(util.pgn(node))
+
+        print(self.board.fen())
+        print(f"https://lichess.org/analysis/{self.board.fen().replace(' ','_')}")
+        print("\n\n\n")
+

@@ -49,9 +49,9 @@ def analyse(lidi,okmoves,minmov,minperc):
     ret = []
     dirty= False
     sum_moves = sum([ sumdi(di) for di in lidi   ] )
-    
 
     cum_mv =0 
+    aru = 0
     for di in lidi: 
         if cum_mv < minperc*sum_moves: # havent reached 90% yet
             mvcnt = sumdi(di)
@@ -61,6 +61,7 @@ def analyse(lidi,okmoves,minmov,minperc):
                     ret.append( f"\t{di['san']}\t{mvcnt}({fmt_stst(mvcnt,sum_moves)})\t!! {fmt_q(di)}"   )
                     dirty = True
                 else:
+                    aru+=mvcnt
                     ret.append( f"\t{di['san']}\t{mvcnt}({fmt_stst(mvcnt,sum_moves)})\tOK {fmt_q(di)}"   )
     
     
@@ -68,5 +69,5 @@ def analyse(lidi,okmoves,minmov,minperc):
         ret = ''
     else:
         ret = '\n'.join(ret)
-    return ret
+    return ret, minperc*sum_moves- aru
 
