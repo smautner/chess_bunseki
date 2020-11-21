@@ -115,7 +115,7 @@ class bunseki():
 
 
     def print(self):
-        print(f"possition reached:{ sum(map( util.getimportance, self.gn))*100:.2f}")
+        print(f"possition frequency:{ sum(map( util.getimportance, self.gn))*100:.2f}")
         if self.color ==1:
             print(self.board.unicode(empty_square=' ',invert_color=True))
         else:
