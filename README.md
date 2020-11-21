@@ -24,7 +24,7 @@ bunseki  -o lichessstudy_white.pgn -w 1 -m 500 -c 60
 
 ```
 possition reached: 60.53     <- accoding to choosen database and repertoire file                                                                                
-♜ ♞ ♝ ♚ ♛ ♝ ♞ ♜        
+♜ ♞ ♝ ♚ ♛ ♝ ♞ ♜              <- colors look correct in terminal lol
 ♟ ♟ ♟   ♟ ♟ ♟ ♟                  
                              
       ♟                                  

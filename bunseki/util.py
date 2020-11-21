@@ -38,6 +38,13 @@ def merge(games):
 
     return master_node
 
+def getimportance(node):
+
+    res = 1
+    while node.parent:
+        res*= node.proba
+        node = node.parent
+    return res
 
 
 def history(node):

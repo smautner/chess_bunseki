@@ -15,6 +15,13 @@ parser.add_argument('-s','--lichess_strength',dest='STRENGTH', help= 'select pla
 parser.add_argument('-t','--lichess_format',dest='TIMECTL', help= 'select time control for lichess db', type=str,nargs='+', default = ['blitz','rapid'])
 
 
+
+def proba_calculation(gn, moves, movesum):
+    movcntdi = { m['san']:ali.sumdi(m)  for m in moves}
+    for child in gn.variations: #  i could calculate the percentage of games that end up here...
+        child.proba = movcntdi[child.san()]/ movesum
+
+
 def main(): 
     args = parser.parse_args()
     hashname = hash((args.DATABASE, tuple(args.STRENGTH), tuple( args.TIMECTL)))
@@ -35,14 +42,19 @@ def main():
         games.append(stuff)
     game = util.merge(games)
 
+    fen = game.board().fen()
+    moves, total_games = h.call( lambda: ali.ask(fen,args),fen)
+    game.proba = 1
+    if args.COLOR ==0:
+        proba_calculation(game, moves, movesum)
 
-    _, total_games = h.call( lambda: ali.ask(game.board().fen(),args),fen)
     ###############
     # for fens get the game-node and lichess-db answer
     ##############
     fens = defaultdict(list)
     def visit(gn):
         if gn.ply() % 2  == args.COLOR:  # do we need to analyze this?
+            gn.proba = 1 
             enemy_moves = [str(v.san()) for v in  gn.variations] # UCI has redundant codes :(
             if  enemy_moves:
                 # lets do a lookup 
@@ -52,6 +64,8 @@ def main():
 
                 moves, movesum = h.call( lambda: ali.ask(fen,args),fen)
 
+                # this blocck is for proba calculation
+                proba_calculation(gn,moves,movesum) 
 
                 fens[fen].append([moves,movesum,gn]) 
                 if movesum < args.MINMOV*2:
@@ -77,7 +91,7 @@ def main():
         mo_s_gn_li  = fens[k]
         # all the moves from all game nodes that share the fen
         enemy_moves = [str(v.san()) for mosgn in mo_s_gn_li  for v in  mosgn[2].variations]
-        res,num = ali.analyse(mo_s_gn_li[0][0],enemy_moves, minmov=args.MINMOV, minperc= args.MINPERC/100, totalgames=total_games)
+        res,num = ali.analyse(mo_s_gn_li[0][0],enemy_moves, minmov=args.MINMOV, minperc= args.MINPERC/100, games_total=total_games)
 
         if res: 
             bunsekitachi.append(bunseki( [e[2] for e in mo_s_gn_li ]  ,args.COLOR, res,num   ))
@@ -101,6 +115,7 @@ class bunseki():
 
 
     def print(self):
+        print(f"possition reached:{ sum(map( util.getimportance, self.gn))*100:.2f}")
         if self.color ==1:
             print(self.board.unicode(empty_square=' ',invert_color=True))
         else:
@@ -111,8 +126,8 @@ class bunseki():
             
         for node in self.gn:
             print(util.pgn(node))
-
         print(self.board.fen())
         print(f"https://lichess.org/analysis/{self.board.fen().replace(' ','_')}")
         print("\n\n\n")
+
 

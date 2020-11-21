@@ -56,9 +56,10 @@ def analyse(lidi,okmoves,minmov,minperc, games_total):
         if cum_mv < minperc*sum_moves: # havent reached 90% yet
             mvcnt = sumdi(di)
             if mvcnt > minmov: # more than minmov played
-                cum_mv+= mvcnt
+                cum_mv+= mvcnt 
+                freq = f"freq: { (mvcnt*100)/games_total :.2f}"
                 if  di['san'] not in okmoves:
-                    ret.append( f"\t{di['san']}\t{mvcnt}({fmt_stst(mvcnt,sum_moves)})\t!! {fmt_q(di)} frequency: { (mvcnt*100)/games_total}"   )
+                    ret.append( f"\t{di['san']}\t{mvcnt}({fmt_stst(mvcnt,sum_moves)})\t!! {fmt_q(di)}"   )
                     dirty = True
                 else:
                     aru+=mvcnt
