@@ -12,7 +12,7 @@ parser.add_argument('-c','--coverage',dest='MINPERC', help= 'replies musst cover
 
 parser.add_argument('-d','--database',dest='DATABASE', help= '0 = master database 1 = lichess', type=int, default = 0)
 parser.add_argument('-s','--lichess_strength',dest='STRENGTH', help= 'select playing strength for lichess db', type=int,nargs='+', default = [1600,1800])
-parser.add_argument('-f','--lichess_format',dest='TIMECTL', help= 'select time control for lichess db', type=float,nargs='+', default = ['blitz','rapid'])
+parser.add_argument('-t','--lichess_format',dest='TIMECTL', help= 'select time control for lichess db', type=str,nargs='+', default = ['blitz','rapid'])
 
 
 def main(): 
