@@ -2,7 +2,8 @@
 import chess.pgn
 import sys
 import chess
-
+import os 
+import pickle
 def merge(games):
     master_node = chess.pgn.Game()
 
@@ -56,3 +57,25 @@ def pgn(node):
 
     exporter = chess.pgn.StringExporter(headers=False, variations=True, comments=True)
     return g.game().accept(exporter)
+
+
+
+class cacher():
+    def __init__(self,cachename): 
+        self.cachename = f".{cachename}"
+        if os.path.exists(self.cachename): 
+            self.cache = pickle.load( open( self.cachename, "rb" ) )
+        else:
+            self.cache={}
+
+    def write(self):
+        pickle.dump( self.cache, open( self.cachename, "wb" ) )
+
+    def call(self,f, key): 
+        if key in self.cache:
+            return self.cache[key]
+        else:
+            r = f()
+            self.cache[key] = r 
+        return r
+

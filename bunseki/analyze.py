@@ -1,7 +1,7 @@
 import chess.pgn
 import bunseki.util as util
 import bunseki.asklichess as ali
-
+from collections import defaultdict 
 import argparse
 
 parser = argparse.ArgumentParser() 
@@ -17,6 +17,15 @@ parser.add_argument('-t','--lichess_format',dest='TIMECTL', help= 'select time c
 
 def main(): 
     args = parser.parse_args()
+    hashname = hash((args.DATABASE, tuple(args.STRENGTH), tuple( args.TIMECTL)))
+        
+    h = util.cacher(hashname)
+
+    ####
+    # collect the game in a huge tree
+    # we could also just make a list of fens, but the tree makes it easy 
+    # to cut a whole branch when there are too few games
+    ####
     repo = open(args.PGNFILE)
     games = []
     while True:
@@ -24,41 +33,61 @@ def main():
         if not stuff:
             break
         games.append(stuff)
-
     game = util.merge(games)
 
 
-
+    ###############
+    # for fens get the game-node and lichess-db answer
+    ##############
+    fens = defaultdict(list)
     def visit(gn):
         if gn.ply() % 2  == args.COLOR:  # do we need to analyze this?
-            enemy_moves = [str(v.san()) for v in  gn.variations]
-            #enemy_moves = [str(v.move) for v in  gn.variations]
+            enemy_moves = [str(v.san()) for v in  gn.variations] # UCI has redundant codes :(
             if  enemy_moves:
                 # lets do a lookup 
                 fen = gn.board().fen()
-                res, movesum = ali.ask(fen,enemy_moves, minmov= args.MINMOV, minperc=args.MINPERC, args=args)
-                # outout
-                if res: 
-                    #
-                    if args.COLOR ==1:
-                        print(gn.board().unicode(empty_square=' ',invert_color=True))
-                    else:
-                        print(gn.board().transform(chess.flip_vertical).transform(chess.flip_horizontal).unicode(empty_square=' ',invert_color=True))
-                    print(res)
-                    print()
-                    print(util.pgn(gn))
-                    print(gn.board().fen())
-                    print(f"https://lichess.org/analysis/{fen.replace(' ','_')}")
-                    print("\n\n\n")
+                if fen in fens:
+                    moves,movesum = fens[fen][0][:2]
+
+                moves, movesum = h.call( lambda: ali.ask(fen,args),fen)
+
+
+                fens[fen].append([moves,movesum,gn]) 
                 if movesum < args.MINMOV*2:
                     return
 
         for child in gn.variations:
             visit(child)
-
-
     for g in game.variations:
         visit(g)
 
+    h.write()
 
+    #########################
+    # so, now we can evaluate what we have... 
+    ##########################
 
+    # sort by node weight
+    keys = list(fens.keys())
+    keys.sort(key = lambda x: fens[x][0][1], reverse = True)
+    
+    for k in keys: 
+        mo_s_gn_li  = fens[k]
+        # all the moves from all game nodes that share the fen
+        enemy_moves = [str(v.san()) for mosgn in mo_s_gn_li  for v in  mosgn[2].variations]
+        
+        res = ali.analyse(mo_s_gn_li[0][0],enemy_moves, minmov=args.MINMOV, minperc= args.MINPERC/100)
+        gn = mo_s_gn_li[0][2]
+        if res: 
+            #
+            if args.COLOR ==1:
+                print(gn.board().unicode(empty_square=' ',invert_color=True))
+            else:
+                print(gn.board().transform(chess.flip_vertical).transform(chess.flip_horizontal).unicode(empty_square=' ',invert_color=True))
+            print(res)
+            print()
+            for mosgn in mo_s_gn_li:
+                print(util.pgn(mosgn[2]))
+            print(gn.board().fen())
+            print(f"https://lichess.org/analysis/{k.replace(' ','_')}")
+            print("\n\n\n")

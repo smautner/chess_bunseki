@@ -8,8 +8,8 @@ import time
 
 session = req.Session()
 
-def ask(fen,enemy_moves, minmov= 10, minperc=90, args={}):
-    
+def ask(fen, args):
+    print(".",end='')
     if args.DATABASE ==1:
         parm = {'fen':fen, 
                 'topGames': 0,
@@ -26,7 +26,7 @@ def ask(fen,enemy_moves, minmov= 10, minperc=90, args={}):
     if  res.status_code == 200:
         js = res.json()
         time.sleep(.5)
-        return analyse(js['moves'], enemy_moves, minmov, minperc/100) 
+        return js['moves'], sumdi(js) 
     else:
         print (res.status_code)
         print(res.text)
@@ -68,5 +68,5 @@ def analyse(lidi,okmoves,minmov,minperc):
         ret = ''
     else:
         ret = '\n'.join(ret)
-    return ret, sum_moves
+    return ret
 
