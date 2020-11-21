@@ -45,7 +45,7 @@ def fmt_q(di):
     i = lambda x: int(x*100)
     return [ i(di[v]/a) for v in['white','draws','black']   ]
 
-def analyse(lidi,okmoves,minmov,minperc):
+def analyse(lidi,okmoves,minmov,minperc, games_total):
     ret = []
     dirty= False
     sum_moves = sum([ sumdi(di) for di in lidi   ] )
@@ -58,7 +58,7 @@ def analyse(lidi,okmoves,minmov,minperc):
             if mvcnt > minmov: # more than minmov played
                 cum_mv+= mvcnt
                 if  di['san'] not in okmoves:
-                    ret.append( f"\t{di['san']}\t{mvcnt}({fmt_stst(mvcnt,sum_moves)})\t!! {fmt_q(di)}"   )
+                    ret.append( f"\t{di['san']}\t{mvcnt}({fmt_stst(mvcnt,sum_moves)})\t!! {fmt_q(di)} frequency: { (mvcnt*100)/games_total}"   )
                     dirty = True
                 else:
                     aru+=mvcnt

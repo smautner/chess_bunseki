@@ -36,6 +36,7 @@ def main():
     game = util.merge(games)
 
 
+    _, total_games = h.call( lambda: ali.ask(game.board().fen(),args),fen)
     ###############
     # for fens get the game-node and lichess-db answer
     ##############
@@ -76,7 +77,7 @@ def main():
         mo_s_gn_li  = fens[k]
         # all the moves from all game nodes that share the fen
         enemy_moves = [str(v.san()) for mosgn in mo_s_gn_li  for v in  mosgn[2].variations]
-        res,num = ali.analyse(mo_s_gn_li[0][0],enemy_moves, minmov=args.MINMOV, minperc= args.MINPERC/100)
+        res,num = ali.analyse(mo_s_gn_li[0][0],enemy_moves, minmov=args.MINMOV, minperc= args.MINPERC/100, totalgames=total_games)
 
         if res: 
             bunsekitachi.append(bunseki( [e[2] for e in mo_s_gn_li ]  ,args.COLOR, res,num   ))
