@@ -31,9 +31,9 @@ possition frequency: 60.53     <- accoding to choosen database and repertoire fi
           ♙                                               
                                                                                                           
 ♙ ♙ ♙ ♙ ♙   ♙ ♙                      
-♖ ♘ ♗ ♔ ♕ ♗ ♘ ♖       
+♖ ♘ ♗ ♔ ♕ ♗ ♘ ♖              <- board shown from our pov (black)
         Nf3     5890406(58)     OK [47, 4, 47]     
-        Bc4     879736(8)       !! [43, 4, 52]   <- this move is not in the repertoire, but it seems to score well for black 
+        Bc4     879736(8)       !! [43, 4, 52]   <- this move is not in the repertoire, but black scores 52%!
         Nc3     792600(7)       OK [49, 4, 45]                                                            
                                                                                                           
 1. e4 c5 *                                    
@@ -48,4 +48,4 @@ https://lichess.org/analysis/rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR_w_K
 * i would have liked to use UCI notation to communicate between python-chess and lichess
 but they use different notation for castles.
 
-* python-chess requires python > 3.7
+* python-chess requires python >= 3.7
