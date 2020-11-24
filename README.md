@@ -7,43 +7,44 @@ This scripts checks your oponents responses against the most played moves
 on the lichess database.
 
 
-# usage 
+# usage
 ```
 pip install bunseki
 
 
-# whites perspective, missing moves musst have been played at least 500 times 
-# make sure my repertoire covers 60% of opponents responses
-bunseki  -o lichessstudy_white.pgn -w 1 -m 500 -c 60 
+# whites perspective, missing moves musst have been played at least 500 times
+# utility is the probability of seeing the top opponent move
+# we sort by that, cutoff is defined by -q
+bunseki -w 1  -i lichessstudy_white.pgn -m 500 -q .5
 
 # to check against lichess user database instead of the masters, e.g.:
--d 1  -s 1600 1800 -t blitz rapid 
+-d 1  -s 1600 1800 -t blitz rapid
 ```
 
 # example
 
 ```
-possition frequency: 60.53     <- accoding to choosen database and repertoire file                                                                                
-♜ ♞ ♝ ♚ ♛ ♝ ♞ ♜              <- colors look correct in terminal lol
-♟ ♟ ♟   ♟ ♟ ♟ ♟                  
-                             
-      ♟                                  
-          ♙                                               
-                                                                                                          
-♙ ♙ ♙ ♙ ♙   ♙ ♙                      
-♖ ♘ ♗ ♔ ♕ ♗ ♘ ♖              <- board shown from our pov (black)
-        Nf3     5890406(58)     OK [47, 4, 47]     
-        Bc4     879736(8)       !! [43, 4, 52]   <- this move is not in the repertoire, but black scores 52%!
-        Nc3     792600(7)       OK [49, 4, 45]                                                            
-                                                                                                          
-1. e4 c5 *                                    
-rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2                           
-https://lichess.org/analysis/rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR_w_KQkq_-_0_2   <- analysis link
+possition frequency:35.68 utility:6.15 <- possition proability and utility of learning a new move
+♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖            <- colors conveniently inverted for terminal usage
+♙ ♙ ♙ ♙   ♙ ♙ ♙
+
+        ♙
+        ♟
+          ♞
+♟ ♟ ♟ ♟   ♟ ♟ ♟
+♜ ♞ ♝ ♛ ♚ ♝   ♜
+        Nc6     6235325(66)     OK [50, 4, 44]
+        d6      1619060(17)     !! [52, 4, 42] <- this move is missing in the db
+        Nf6     869610(9)       OK [49, 4, 45]
+
+1. e4 e5 2. Nf3 *
+rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2
+https://lichess.org/analysis/rnbqkbnr/pppp1ppp/8/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R_b_KQkq_-_1_2
 ```
 
 
 
-# strange stuff 
+# strange stuff
 
 * i would have liked to use UCI notation to communicate between python-chess and lichess
 but they use different notation for castles.

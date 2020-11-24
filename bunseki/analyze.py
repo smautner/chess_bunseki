@@ -5,18 +5,23 @@ from collections import defaultdict
 import argparse
 
 parser = argparse.ArgumentParser() 
-parser.add_argument('-w','--white',dest='COLOR', help= 'is the repertoire for white', type=int,choices=[0,1], required=True)
-parser.add_argument('-o','--pgnfile',dest='PGNFILE', help= 'path to pgn file to parse', type=str, required=True)
-parser.add_argument('-m','--minmoves',dest='MINMOV', help= 'suggestions musst have been played this many times', type=int, default = 300)
-parser.add_argument('-c','--coverage',dest='MINPERC', help= 'replies musst cover this percentage of moves', type=int, default = 60)
+parser.add_argument('-w','--white',dest='COLOR', help= 'is the repertoire for white', type=int, choices=[0,1], required=True)
+parser.add_argument('-i','--pgnfile',dest='PGNFILE', help= 'path to pgn file to parse', type=str, required=True)
+parser.add_argument('-m','--minmoves',dest='MINMOV', help= 'suggestions musst have been played this many times', type=int, default = 500)
+parser.add_argument('-u','--utilitycuy',dest='UTILITYCUT', help= 'cutoff based on utility..i.e. probability that the top move is on board', type=float, default = 0)
 
 parser.add_argument('-d','--database',dest='DATABASE', help= '0 = master database 1 = lichess', type=int, default = 0)
 parser.add_argument('-s','--lichess_strength',dest='STRENGTH', help= 'select playing strength for lichess db', type=int,nargs='+', default = [1600,1800])
 parser.add_argument('-t','--lichess_format',dest='TIMECTL', help= 'select time control for lichess db', type=str,nargs='+', default = ['blitz','rapid'])
 
 
+parser.add_argument('-a','--showallnodes',dest='PRINTALL', help= 'print all to nodes even if they pass the filter',action = "store_true")
+parser.add_argument('-p','--minpercentage',dest='MINPERC', help= 'suggestions musst have been played this many times', type=int, default = 3)
+parser.add_argument('-c','--coverage',dest='MINCOV', help= 'replies musst cover this percentage of moves', type=int, default = 100)
+
 
 def proba_calculation(gn, moves, movesum):
+
     movcntdi = { m['san']:ali.sumdi(m)  for m in moves}
     for child in gn.variations: #  i could calculate the percentage of games that end up here...
         if movesum == 0: 
@@ -88,37 +93,43 @@ def main():
     # sort by node weight
     #keys = list(fens.keys())
     #keys.sort(key = lambda x: fens[x][0][1], reverse = True)
+
+
+
     bunsekitachi = []
 
     for k in fens.keys(): 
         mo_s_gn_li  = fens[k]
         # all the moves from all game nodes that share the fen
         enemy_moves = [str(v.san()) for mosgn in mo_s_gn_li  for v in  mosgn[2].variations]
-        res,num = ali.analyse(mo_s_gn_li[0][0],enemy_moves, minmov=args.MINMOV, minperc= args.MINPERC/100, games_total=total_games)
+        res,perc_miss = ali.analyse2(mo_s_gn_li[0][0],enemy_moves, 
+                              minmov=args.MINMOV, 
+                              target_share  = args.MINCOV/100,
+                              minperc= args.MINPERC/100)
+        bunsekitachi.append(bunseki( [e[2] for e in mo_s_gn_li ]  ,args.COLOR, res, perc_miss   ))
 
-        if res: 
-            bunsekitachi.append(bunseki( [e[2] for e in mo_s_gn_li ]  ,args.COLOR, res,num   ))
-
-    bunsekitachi.sort(key = lambda x: x.weight)
+    bunsekitachi.sort(key = lambda x: x.frequency*x.perc_miss)
 
     for e in bunsekitachi: 
-        e.print()
+        if (e.perc_miss > 0 and e.utility > args.UTILITYCUT)  or args.PRINTALL:
+            e.print()
         
 
 
 
 
 class bunseki():
-    def __init__(self,gn,color,res_str,weight):
+    def __init__(self,gn,color,res_str,perc_miss):
         self.gn = gn
         self.color= color
         self.moves=res_str
-        self.weight = weight
+        self.perc_miss = perc_miss
         self.board = gn[0].board()
-
+        self.frequency = sum(map( util.getimportance, self.gn))*100
+        self.utility = self.frequency * self.perc_miss
 
     def print(self):
-        print(f"possition frequency:{ sum(map( util.getimportance, self.gn))*100:.2f}")
+        print(f"possition frequency:{ self.frequency:.2f} utility:{self.utility:.2f}")
         if self.color ==1:
             print(self.board.unicode(empty_square=' ',invert_color=True))
         else:
@@ -133,4 +144,5 @@ class bunseki():
         print(f"https://lichess.org/analysis/{self.board.fen().replace(' ','_')}")
         print("\n\n\n")
 
-
+if __name__ == '__main__':
+    main()

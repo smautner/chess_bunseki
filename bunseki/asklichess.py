@@ -25,7 +25,7 @@ def ask(fen, args):
 
     if  res.status_code == 200:
         js = res.json()
-        time.sleep(.5)
+        time.sleep(.8)
         return js['moves'], sumdi(js) 
     else:
         print (res.status_code)
@@ -45,30 +45,53 @@ def fmt_q(di):
     i = lambda x: int(x*100)
     return [ i(di[v]/a) for v in['white','draws','black']   ]
 
-def analyse(lidi,okmoves,minmov,minperc, games_total):
-    ret = []
-    dirty= False
-    sum_moves = sum([ sumdi(di) for di in lidi   ] )
 
-    cum_mv =0 
-    aru = 0
-    for di in lidi: 
-        if cum_mv < minperc*sum_moves: # havent reached 90% yet
-            mvcnt = sumdi(di)
-            if mvcnt > minmov: # more than minmov played
-                cum_mv+= mvcnt 
-                freq = f"freq: { (mvcnt*100)/games_total :.2f}"
-                if  di['san'] not in okmoves:
-                    ret.append( f"\t{di['san']}\t{mvcnt}({fmt_stst(mvcnt,sum_moves)})\t!! {fmt_q(di)}"   )
-                    dirty = True
-                else:
-                    aru+=mvcnt
-                    ret.append( f"\t{di['san']}\t{mvcnt}({fmt_stst(mvcnt,sum_moves)})\tOK {fmt_q(di)}"   )
-    
-    
-    if not dirty:
-        ret = ''
+def analyze_single(di, mvsum, okmoves):
+    # returns percentage, inlist, and display string
+    mvcnt = sumdi(di)
+    perc = mvcnt/ mvsum
+    inlist = di['san'] in okmoves
+    description  = f"\t{di['san']}\t{mvcnt}({fmt_stst(mvcnt,mvsum)})\t{'OK' if inlist else '!!'} {fmt_q(di)}"
+
+    return perc, inlist, description, mvcnt
+
+
+def missvalue(z):
+    return max(z)
+    if len(z) == 0:
+        return 0.01
+    return sum(z)/len(z)
+    #return sum([i**2 for i in z])/len(z)/1000
+
+def analyse2(move_dict_list,okmoves,minmov, target_share, minperc):
+
+    '''
+    move_dict_list: dicts from lichess db
+    okmoves: san of the moves we have in our list
+    minmov: ignore moves played less than this
+    target_share: we want this much coverage
+    minperc: move occurange in db
+    '''
+
+    sum_moves = sum([ sumdi(di) for di in move_dict_list   ] )
+
+    # for every move -> calculate percentage covered and the indicator string
+    all_moves  = [ analyze_single (di,sum_moves,okmoves) for di in move_dict_list ]
+    perc_ok =  sum([a[0] for a in all_moves if a[1]])
+    if perc_ok > target_share:
+        perc_missing = 0
     else:
-        ret = '\n'.join(ret)
-    return ret, minperc*sum_moves- aru
+
+        # was wollen wir hier? ich will messen wie schlecht wir sind...
+        # 5+5+5+5 < 20 ... 
+        vls = [ a[0] for a in all_moves if a[0]>minperc and not a[1]]
+        perc_missing = missvalue([ a[0] for a in all_moves if  not a[1]])
+        #print(vls, perc_missing)
+        
+        #print(perc_missing, perc_ok, sum([a[0] for a in all_moves if a[0] < 5 and not a[1]]))
+
+
+
+    ret = '\n'.join([a[2] for a in all_moves if a[3] > minmov and a[0] > minperc])
+    return ret, perc_missing 
 
