@@ -52,8 +52,9 @@ def main():
     game = util.merge(games)
 
     fen = game.board().fen()
-    moves, total_games = h.call( lambda: ali.ask(fen,args),fen)
+    moves, total_games, openingname = h.call( lambda: ali.ask(fen,args),fen)
     game.proba = 1
+    game.openingname = openingname
     if args.COLOR ==0:
         proba_calculation(game, moves, total_games)
 
@@ -71,10 +72,11 @@ def main():
                 if fen in fens:
                     moves,movesum = fens[fen][0][:2]
 
-                moves, movesum = h.call( lambda: ali.ask(fen,args),fen)
+                moves, movesum, opening= h.call( lambda: ali.ask(fen,args),fen)
 
                 # this blocck is for proba calculation
                 proba_calculation(gn,moves,movesum) 
+                gn.opening = opening
 
                 fens[fen].append([moves,movesum,gn]) 
                 if movesum < args.MINMOV*2:
@@ -131,6 +133,12 @@ class bunseki():
 
     def print(self):
         print(f"possition frequency:{ self.frequency:.2f} utility:{self.utility:.2f}")
+        op = self.gn[0].opening
+        if op:
+            print (f"{op['eco']} {op['name']} ")
+        print ()
+
+
         if self.color ==1:
             print(self.board.unicode(empty_square=' ',invert_color=True))
         else:
@@ -143,6 +151,7 @@ class bunseki():
             print(util.pgn(node))
         print(self.board.fen())
         print(f"https://lichess.org/analysis/{self.board.fen().replace(' ','_')}")
+        #print( self.gn.get('opening',''))
         print("\n\n\n")
 
 if __name__ == '__main__':

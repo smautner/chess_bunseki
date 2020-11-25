@@ -26,7 +26,7 @@ def ask(fen, args):
     if  res.status_code == 200:
         js = res.json()
         time.sleep(.8)
-        return js['moves'], sumdi(js) 
+        return js['moves'], sumdi(js), js['opening'] or ''
     else:
         print (res.status_code)
         print(res.text)
