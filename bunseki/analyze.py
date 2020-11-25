@@ -18,6 +18,7 @@ parser.add_argument('-t','--lichess_format',dest='TIMECTL', help= 'select time c
 parser.add_argument('-a','--showallnodes',dest='PRINTALL', help= 'print all to nodes even if they pass the filter',action = "store_true")
 parser.add_argument('-p','--minpercentage',dest='MINPERC', help= 'suggestions musst have been played this many times', type=int, default = 3)
 parser.add_argument('-c','--coverage',dest='MINCOV', help= 'replies musst cover this percentage of moves', type=int, default = 100)
+parser.add_argument('--maxparse',dest='MAXPARSE', help= 'my studies have a few outdated chapters that i put at the end', type=int, default = 100)
 
 
 def proba_calculation(gn, moves, movesum):
@@ -45,7 +46,7 @@ def main():
     games = []
     while True:
         stuff = chess.pgn.read_game(repo)
-        if not stuff:
+        if not stuff or len(games)==args.MAXPARSE:
             break
         games.append(stuff)
     game = util.merge(games)
