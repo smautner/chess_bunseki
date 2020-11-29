@@ -5,32 +5,51 @@
 import requests as req
 from pprint import pprint
 import time
+import bunseki.util as util
 
 session = req.Session()
 
-def ask(fen, args):
-    print(".",end='')
-    if args.DATABASE ==1:
-        parm = {'fen':fen, 
-                'topGames': 0,
-                'recentGames':0, 
-                'moves':'15',
-                'variant':"standard",
-                'speeds[]':args.TIMECTL,
-                'ratings[]':args.STRENGTH}
-        res = session.get('https://explorer.lichess.ovh/lichess', params=parm)
-    else:
-        parm = {'fen':fen, 'topGames': 0, 'moves':'15' }
-        res = session.get('https://explorer.lichess.ovh/master', params=parm)
 
-    if  res.status_code == 200:
-        js = res.json()
-        time.sleep(.8)
-        return js['moves'], sumdi(js), js['opening'] or ''
-    else:
-        print (res.status_code)
-        print(res.text)
-        assert False
+class lichess:
+    def __init__(self,args):
+        self.args=args
+        if args.DATABASE == 1:
+            hashname = hash((args.DATABASE, tuple(args.STRENGTH), tuple( args.TIMECTL)))
+        else:
+            hashname = 23
+        self.hasher = util.cacher( hashname )
+    
+    def end(self):
+        self.hasher.write()
+
+    def ask(self, fen):
+        reply =  self.hasher.call( lambda: self.lookup(fen),fen)
+        return reply
+
+
+    def lookup(self,fen):
+        print(".",end='')
+        if self.args.DATABASE ==1:
+            parm = {'fen':fen, 
+                    'topGames': 0,
+                    'recentGames':0, 
+                    'moves':'15',
+                    'variant':"standard",
+                    'speeds[]':self.args.TIMECTL,
+                    'ratings[]':self.args.STRENGTH}
+            res = session.get('https://explorer.lichess.ovh/lichess', params=parm)
+        else:
+            parm = {'fen':fen, 'topGames': 0, 'moves':'15' }
+            res = session.get('https://explorer.lichess.ovh/master', params=parm)
+
+        if  res.status_code == 200:
+            js = res.json()
+            time.sleep(.8)
+            return js['moves'], sumdi(js), js['opening'] or ''
+        else:
+            print (res.status_code)
+            print(res.text)
+            assert False
 
 
 

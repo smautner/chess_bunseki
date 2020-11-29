@@ -33,9 +33,7 @@ def proba_calculation(gn, moves, movesum):
 
 def main(): 
     args = parser.parse_args()
-    hashname = hash((args.DATABASE, tuple(args.STRENGTH), tuple( args.TIMECTL)))
-        
-    h = util.cacher(hashname)
+    db = ali.lichess(args)
 
     ####
     # collect the game in a huge tree
@@ -52,7 +50,7 @@ def main():
     game = util.merge(games)
 
     fen = game.board().fen()
-    moves, total_games, openingname = h.call( lambda: ali.ask(fen,args),fen)
+    moves, total_games, openingname = db.ask(fen)
     game.proba = 1
     game.openingname = openingname
     if args.COLOR ==0:
@@ -72,7 +70,7 @@ def main():
                 if fen in fens:
                     moves,movesum = fens[fen][0][:2]
 
-                moves, movesum, opening= h.call( lambda: ali.ask(fen,args),fen)
+                moves, movesum, opening= db.ask(fen)
 
                 # this blocck is for proba calculation
                 proba_calculation(gn,moves,movesum) 
@@ -87,7 +85,7 @@ def main():
     for g in game.variations:
         visit(g)
 
-    h.write()
+    db.end()
 
     #########################
     # so, now we can evaluate what we have... 

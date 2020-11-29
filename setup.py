@@ -106,6 +106,10 @@ setup(
     install_requires=[
         'python-chess','requests'
     ],
-    entry_points = { 'console_scripts': ['bunseki=bunseki.analyze:main'] },
+    entry_points = { 'console_scripts': 
+                    [
+                        'bunseki=bunseki.analyze:main',
+                        'bunseki_repobuilder=bunseki.repobuilder:main'
+                    ] },
     cmdclass={'sdist': sdist, 'install': install}
 )

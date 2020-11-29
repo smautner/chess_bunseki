@@ -38,8 +38,22 @@ def merge(games):
 
     return master_node
 
-def getimportance(node):
+def loadpgn(filename, maxread=999):
+    assert maxread == 999, 'not implemented'
+    repo = open(filename)
+    games = []
+    while True:
+        stuff = chess.pgn.read_game(repo)
+        if not stuff:
+            break
+        games.append(stuff)
+    game = merge(games)
+    return game
 
+
+
+
+def getimportance(node):
     res = 1
     while node.parent:
         res*= node.proba
@@ -48,7 +62,6 @@ def getimportance(node):
 
 
 def history(node):
-    
     r=[]
     while node.parent:
         r.append(str(node.move))
@@ -57,13 +70,15 @@ def history(node):
     return r
 
 def pgn(node):
-
     g = chess.pgn.Game()
     for move in history(node):
-        g= g.add_variation(chess.Move.from_uci(move))
-
+        g = g.add_variation(chess.Move.from_uci(move))
     exporter = chess.pgn.StringExporter(headers=False, variations=True, comments=True)
     return g.game().accept(exporter)
+
+
+
+
 
 
 
