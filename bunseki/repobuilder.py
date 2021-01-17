@@ -62,6 +62,9 @@ def main():
 
 
         fens[fen]=1
+        
+        print()
+        print(gn.ply())
         print(gn.board().unicode())
         
         if gn.ply() < args.MINPLY:
@@ -76,8 +79,9 @@ def main():
                 child.proba = gn.proba
         else:
             for move in moves: 
-                p= (ali.sumdi(move)/movesum)*gn.proba 
+                p= (ali.sumdi(move)/movesum)*gn.proba
                 mov = gn.board().push_san(move['san']) 
+                print( '\t',move['san'],int(p*100))
                 if p > (args.UTILITYCUT/100):
                     if not  gn.has_variation(mov):
                         gn.add_variation(mov)
