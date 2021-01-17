@@ -15,6 +15,7 @@ parser.add_argument('-c','--mydb',dest='SHAREDB', help= 'database for my moves i
 parser.add_argument('-d','--database',dest='DATABASE', help= '0 = master database 1 = lichess', type=int, default = 0)
 parser.add_argument('-s','--lichess_strength',dest='STRENGTH', help= 'select playing strength for lichess db', type=int,nargs='+', default = [1600,1800])
 parser.add_argument('-t','--lichess_format',dest='TIMECTL', help= 'select time control for lichess db', type=str,nargs='+', default = ['blitz','rapid'])
+parser.add_argument('--min-ply',dest='MINPLY', help= 'dont show alternatives for the first plies', type=int, default = -1)
 
 
 def main(): 
@@ -62,8 +63,12 @@ def main():
 
         fens[fen]=1
         print(gn.board().unicode())
+        
+        if gn.ply() < args.MINPLY:
+            for child in gn.variations:
+                child.proba = gn.proba
 
-        if myturn(gn):
+        elif myturn(gn):
             if not gn.variations: 
                 mov = gn.board().push_san(moves[0]['san']) 
                 gn.add_variation(mov)
@@ -82,8 +87,9 @@ def main():
         return gn.variations
 
     nodelist =  [game]
+
     while nodelist: 
-        node =nodelist.pop()
+        node = nodelist.pop()
         if node.board().fen() in fens:
             continue
         else:
