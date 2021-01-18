@@ -19,7 +19,7 @@ parser.add_argument('-s','--lichess_strength',dest='STRENGTH', help= 'select pla
 parser.add_argument('-t','--lichess_format',dest='TIMECTL', help= 'select time control for lichess db', type=str,nargs='+', default = ['blitz','rapid'])
 parser.add_argument('--min-ply',dest='MINPLY', help= 'dont show alternatives for the first plies', type=int, default = -1)
 
-parser.add_argument('-m','--choose_most_played',dest='MYMOVE',default = 'most_played', help= 'criterion for choosing our move most_played or best', type=str)
+parser.add_argument('-m','--choose_most_played',dest='MYMOVE',default = 'dynamic', help= 'criterion for choosing our move most_played,dynamic, or best', type=str)
 
 def main(): 
     args = parser.parse_args()
@@ -43,14 +43,9 @@ def main():
     if args.COLOR ==0:
         proba_calculation(game, moves, total_games)
     '''
-        
-
-
 
     def myturn(gn):
         return gn.ply()% 2 != args.COLOR
-
-
 
 
     def visit(gn):
@@ -66,28 +61,45 @@ def main():
 
         fens[fen]=1
         
-        print()
-        print(gn.ply())
+        #print()
+        #print(gn.ply())
         print(gn.board().unicode())
         
         if gn.ply() < args.MINPLY:
-            for child in gn.variations:
-                child.proba = gn.proba
+            if myturn(gn):
+                for child in gn.variations:
+                    child.proba = gn.proba
+            else:
+                for move in moves:
+                    mov = gn.board().push_san(move['san'])
+                    if gn.has_variation(mov):
+                        gn.variation(mov).proba =  (bunseki.util.sumdi(move) / movesum) * gn.proba
 
         elif myturn(gn):
             if not gn.variations:
+                best_san = util.find_best(moves, gn.ply())
 
                 if args.MYMOVE=='most_frequent':
                     mov = gn.board().push_san(moves[0]['san'])
                     child = gn.add_variation(mov)
-                    if comment := util.find_lemons(moves, gn.ply()):
-                        child.comment = comment
-                elif args.MYMOVE == 'best':
-                    san, mostplayed = util.find_best(moves,gn.ply())
-                    mov = gn.board().push_san(san)
+                    if best_san != moves[0]['san']:
+                        child.comment = f"better: {best_san}"
+
+
+                elif args.MYMOVE=='best':
+                    mov = gn.board().push_san(best_san)
                     child = gn.add_variation(mov)
-                    if mostplayed:
-                        child.comment = mostplayed
+                    if best_san != moves[0]['san']:
+                        child.comment = f"most frequent: {moves[0]['san']}"
+
+
+                elif args.MYMOVE == 'dynamic':
+                    if best_san == moves[0]['san']:
+                        mov = gn.board().push_san(best_san)
+                        child = gn.add_variation(mov)
+                    else:
+                        gn.comment = f"terminated:{gn.proba*100:.1f}"
+
                 else:
                     assert False
 
@@ -104,6 +116,8 @@ def main():
                         print("  addvariation", move['san'])
                 if gn.has_variation(mov):
                     gn.variation(mov).proba = p
+
+
         return gn.variations
 
     nodelist =  [game]

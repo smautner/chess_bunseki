@@ -96,6 +96,7 @@ class cacher():
         return r
 
 
+'''
 def find_lemons(moves, ply):
     # checks if the most popular move is not the best in win percentage
     # (compared to a move at least 20% played)
@@ -124,6 +125,19 @@ def find_best(moves, ply):
     score_mv = lambda m: (m[us] - m[them]) / sumdi(m) if sumdi(m) > .2*sum else -99999
     best = max(moves, key=score_mv)
     return best['san'], '' if best['san'] == moves[0]['san'] else f"most played is {moves[0]['san']}"
+'''
+
+def find_best(moves, ply):
+    # returns the best move, most played or ''
+
+    us = 'black'
+    them = 'white'
+    if (ply + 1) % 2:
+        us, them = them, us
+    sum = max(sumdi(moves[0]), 100)
+    score_mv = lambda m: (m[us] - m[them]) / sumdi(m) if sumdi(m) > .2*sum else -99999
+    best = max(moves, key=score_mv)
+    return best['san']
 
 
 def sumdi(di):
