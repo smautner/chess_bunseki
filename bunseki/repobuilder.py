@@ -19,7 +19,7 @@ parser.add_argument('-s','--lichess_strength',dest='STRENGTH', help= 'select pla
 parser.add_argument('-t','--lichess_format',dest='TIMECTL', help= 'select time control for lichess db', type=str,nargs='+', default = ['blitz','rapid'])
 parser.add_argument('--min-ply',dest='MINPLY', help= 'dont show alternatives for the first plies', type=int, default = -1)
 
-parser.add_argument('-m','--choose_most_played',dest='MYMOVE',default = 'dynamic', help= 'criterion for choosing our move most_played,dynamic, or best', type=str)
+parser.add_argument('-m','--choose_most_played',dest='MYMOVE',default = 'best', help= 'criterion for choosing our move most_played,terminate, or best', type=str)
 
 def main(): 
     args = parser.parse_args()
@@ -93,7 +93,7 @@ def main():
                         child.comment = f"most frequent: {moves[0]['san']}"
 
 
-                elif args.MYMOVE == 'dynamic':
+                elif args.MYMOVE == 'terminate':
                     if best_san == moves[0]['san']:
                         mov = gn.board().push_san(best_san)
                         child = gn.add_variation(mov)
