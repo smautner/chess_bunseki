@@ -1,4 +1,6 @@
 import chess.pgn
+
+import bunseki.util
 import bunseki.util as util
 import bunseki.asklichess as ali
 from collections import defaultdict 
@@ -23,7 +25,7 @@ parser.add_argument('--maxparse',dest='MAXPARSE', help= 'my studies have a few o
 
 def proba_calculation(gn, moves, movesum):
 
-    movcntdi = { m['san']:ali.sumdi(m)  for m in moves}
+    movcntdi = {m['san']: bunseki.util.sumdi(m) for m in moves}
     for child in gn.variations: #  i could calculate the percentage of games that end up here...
         if movesum == 0: 
             child.proba = 0

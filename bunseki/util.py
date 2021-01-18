@@ -51,8 +51,6 @@ def loadpgn(filename, maxread=999):
     return game
 
 
-
-
 def getimportance(node):
     res = 1
     while node.parent:
@@ -78,10 +76,6 @@ def pgn(node):
 
 
 
-
-
-
-
 class cacher():
     def __init__(self,cachename): 
         self.cachename = f".{cachename}"
@@ -101,3 +95,22 @@ class cacher():
             self.cache[key] = r 
         return r
 
+
+def find_lemons(moves, ply):
+    # checks if the most popular move is not the best in win percentage
+    # (compared to a move at least 20% played)
+
+
+    us = 'black'
+    them = 'white'
+    if ply % 2:
+        us, them = them,us
+    score = moves[0][us] / moves[0][them]
+    sum = max(sumdi(moves[0]), 100)
+    if [ e for e in moves[1:] if sumdi(e)> sum*.2  and e[us]/e[them] > score  ]:
+        return "there might be a better move"
+    return ''
+
+
+def sumdi(di):
+    return di['black']+di['white']+di['draws']

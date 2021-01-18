@@ -3,9 +3,9 @@
 
 
 import requests as req
-from pprint import pprint
 import time
 import bunseki.util as util
+from bunseki.util import sumdi
 
 session = req.Session()
 
@@ -52,11 +52,6 @@ class lichess:
             assert False
 
 
-
-def sumdi(di):
-    return di['black']+di['white']+di['draws']
-
-
 def fmt_stst(my,al):
     return int((my/al)*100)
 def fmt_q(di):
@@ -92,7 +87,7 @@ def analyse2(move_dict_list,okmoves,minmov, target_share, minperc):
     minperc: move occurange in db
     '''
 
-    sum_moves = sum([ sumdi(di) for di in move_dict_list   ] )
+    sum_moves = sum([sumdi(di) for di in move_dict_list])
 
     # for every move -> calculate percentage covered and the indicator string
     all_moves  = [ analyze_single (di,sum_moves,okmoves) for di in move_dict_list ]

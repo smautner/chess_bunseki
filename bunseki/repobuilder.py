@@ -1,5 +1,7 @@
 import chess.pgn
 from types import SimpleNamespace
+
+import bunseki.util
 import bunseki.util as util
 import bunseki.asklichess as ali
 from collections import defaultdict 
@@ -73,13 +75,15 @@ def main():
 
         elif myturn(gn):
             if not gn.variations: 
-                mov = gn.board().push_san(moves[0]['san']) 
-                gn.add_variation(mov)
+                mov = gn.board().push_san(moves[0]['san'])
+                child = gn.add_variation(mov)
+                if comment := util.find_lemons(moves, child.ply() % 2):
+                    child.comment = comment
             for child in gn.variations:
                 child.proba = gn.proba
         else:
             for move in moves: 
-                p= (ali.sumdi(move)/movesum)*gn.proba
+                p= (bunseki.util.sumdi(move) / movesum) * gn.proba
                 mov = gn.board().push_san(move['san']) 
                 print( '\t',move['san'],int(p*100))
                 if p > (args.UTILITYCUT/100):
