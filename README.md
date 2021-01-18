@@ -56,6 +56,8 @@ $bunseki_repobuilder -i black_auto.pgn -w 0 -u 2 -d 1 -c 0
 
 # -u 2 adds all moves that appear with frequency .02 to the moves in an existing pgn
 # automatically choosing moves for our side
+# there is also an argument to start from a certain ply count to obtain a file for
+# one specific opening
 
 ```
 
