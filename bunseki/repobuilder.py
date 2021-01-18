@@ -19,6 +19,7 @@ parser.add_argument('-s','--lichess_strength',dest='STRENGTH', help= 'select pla
 parser.add_argument('-t','--lichess_format',dest='TIMECTL', help= 'select time control for lichess db', type=str,nargs='+', default = ['blitz','rapid'])
 parser.add_argument('--min-ply',dest='MINPLY', help= 'dont show alternatives for the first plies', type=int, default = -1)
 
+parser.add_argument('-m','--choose_most_played',dest='MYMOVE',default = 'most_played', help= 'criterion for choosing our move most_played or best', type=str)
 
 def main(): 
     args = parser.parse_args()
@@ -74,11 +75,22 @@ def main():
                 child.proba = gn.proba
 
         elif myturn(gn):
-            if not gn.variations: 
-                mov = gn.board().push_san(moves[0]['san'])
-                child = gn.add_variation(mov)
-                if comment := util.find_lemons(moves, child.ply() % 2):
-                    child.comment = comment
+            if not gn.variations:
+
+                if args.MYMOVE=='most_frequent':
+                    mov = gn.board().push_san(moves[0]['san'])
+                    child = gn.add_variation(mov)
+                    if comment := util.find_lemons(moves, gn.ply()):
+                        child.comment = comment
+                elif args.MYMOVE == 'best':
+                    san, mostplayed = util.find_best(moves,gn.ply())
+                    mov = gn.board().push_san(san)
+                    child = gn.add_variation(mov)
+                    if mostplayed:
+                        child.comment = mostplayed
+                else:
+                    assert False
+
             for child in gn.variations:
                 child.proba = gn.proba
         else:

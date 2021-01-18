@@ -100,16 +100,30 @@ def find_lemons(moves, ply):
     # checks if the most popular move is not the best in win percentage
     # (compared to a move at least 20% played)
 
+    us = 'black'
+    them = 'white'
+
+    if (ply+1) % 2:
+        us, them = them,us
+    score_mv = lambda m: (m[us]-m[them]) / sumdi(m)
+    score = score_mv(moves[0])
+    sum = max(sumdi(moves[0]), 100)
+    if Z:=[ e for e in moves[1:] if sumdi(e) > sum*.2  and score_mv(e) > score  ]:
+        return "there might be a better move"+str([ z['san'] for z in Z])
+    return ''
+
+
+def find_best(moves, ply):
+    # returns the best move, most played or ''
 
     us = 'black'
     them = 'white'
-    if ply % 2:
-        us, them = them,us
-    score = moves[0][us] / moves[0][them]
+    if (ply + 1) % 2:
+        us, them = them, us
     sum = max(sumdi(moves[0]), 100)
-    if [ e for e in moves[1:] if sumdi(e)> sum*.2  and e[us]/e[them] > score  ]:
-        return "there might be a better move"
-    return ''
+    score_mv = lambda m: (m[us] - m[them]) / sumdi(m) if sumdi(m) > .2*sum else -99999
+    best = max(moves, key=score_mv)
+    return best['san'], '' if best['san'] == moves[0]['san'] else f"most played is {moves[0]['san']}"
 
 
 def sumdi(di):
