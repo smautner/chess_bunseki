@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-w','--white',dest='COLOR', help= 'is the repertoire for white', type=int, choices=[0,1], required=True)
 parser.add_argument('-i','--pgnfile',dest='PGNFILE', help= 'path to pgn file to parse', type=str, required=True)
 parser.add_argument('-u','--utilitycut',dest='UTILITYCUT', help= 'cutoff based on utility..i.e. probability that the top move is on board', type=float, default = 2)
-parser.add_argument('-c','--mydb',dest='SHAREDB', help= 'database for my moves is masterdb, regardless of enemy', type=int, default = 1)
+parser.add_argument('-c','--mydb',dest='SHAREDB', help= 'our db is the masterdb, if this is 1 it is the same as the default db', type=int, default = 0)
 parser.add_argument('-d','--database',dest='DATABASE', help= '0 = master database 1 = lichess', type=int, default = 0)
 parser.add_argument('-s','--lichess_strength',dest='STRENGTH', help= 'select playing strength for lichess db', type=int,nargs='+', default = [1600,1800])
 parser.add_argument('-t','--lichess_format',dest='TIMECTL', help= 'select time control for lichess db', type=str,nargs='+', default = ['blitz','rapid'])
@@ -64,7 +64,7 @@ def main():
         #print()
         #print(gn.ply())
         print(gn.board().unicode())
-        
+        print ("proba:",gn.__dict__.get("proba","no proba"))
         if gn.ply() < args.MINPLY:
             if myturn(gn):
                 for child in gn.variations:
