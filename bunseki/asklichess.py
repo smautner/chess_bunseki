@@ -44,7 +44,7 @@ class lichess:
 
         if  res.status_code == 200:
             js = res.json()
-            time.sleep(.8)
+            time.sleep(1)
             return js['moves'], sumdi(js), js['opening'] or ''
         else:
             print (res.status_code)

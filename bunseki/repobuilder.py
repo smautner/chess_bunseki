@@ -12,7 +12,7 @@ import argparse
 parser = argparse.ArgumentParser() 
 parser.add_argument('-w','--white',dest='COLOR', help= 'is the repertoire for white', type=int, choices=[0,1], required=True)
 parser.add_argument('-i','--pgnfile',dest='PGNFILE', help= 'path to pgn file to parse', type=str, required=True)
-parser.add_argument('-u','--utilitycut',dest='UTILITYCUT', help= 'cutoff based on utility..i.e. probability that the top move is on board', type=float, default = 2)
+parser.add_argument('-u','--utilitycut',dest='UTILITYCUT', help= 'determines depth based on probability to occur, .25 is solid', type=float, default = 2)
 parser.add_argument('-c','--mydb',dest='SHAREDB', help= 'our db is the masterdb, if this is 1 it is the same as the default db', type=int, default = 0)
 parser.add_argument('-d','--database',dest='DATABASE', help= '0 = master database 1 = lichess', type=int, default = 0)
 parser.add_argument('-s','--lichess_strength',dest='STRENGTH', help= 'select playing strength for lichess db', type=int,nargs='+', default = [1600,1800])
