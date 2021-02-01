@@ -57,12 +57,14 @@ def main():
             db.end()
             mydb.end()
             assert False, 'sending requests too fast probably'
+        if not moves: # to few moves, i guess
+            return []
 
 
         fens[fen]=1
         
         #print()
-        #print(gn.ply())
+        print(gn.ply())
         print(gn.board().unicode())
         print ("proba:",gn.__dict__.get("proba","no proba"))
         if gn.ply() < args.MINPLY:
