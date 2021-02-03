@@ -25,8 +25,7 @@ def main():
     masterarg= SimpleNamespace(DATABASE=0)
     game = util.loadpgn(args.PGNFILE) 
     game.proba = 1
-    fens = {} # visited
-    not_visited = {}
+    fens = {} # known gamenodes
 
     db = ali.lichess(args)
     if args.DATABASE == 1 and args.SHAREDB == 0:
@@ -76,27 +75,26 @@ def main():
         print(gn.board().unicode())
         print ("proba:",gn.__dict__.get("proba","no proba"))
 
-        fens[fen] = gn 
 
-        if gn.ply() < args.MINPLY:
-            pass 
+        skip =  gn.ply() < args.MINPLY
 
-        elif myturn(gn):
-            if not gn.variations:
-
-                best_san = util.find_best(moves, gn.ply())
-                '''
+        if myturn(gn):
                 # could we transpoose to s.th?  
                 # this is a mess.. i should define a move first and then do the other crap..
-                for move in moves: 
-                    mov = gn.board().push_san(move['san'])
-                    b= gn.board()
-                    b.push(mov)
-                    if b.fen() in fens: 
-                        if best_san != move['san']:
-                            gn.comment+='could transition elsewhere via:'+move['san']
-                '''
+            best_san = util.find_best(moves, gn.ply())
+            for move in moves: 
+                mov = gn.board().push_san(move['san'])
+                b= gn.board()
+                b.push(mov)
+                if b.fen() in fens: 
+                    if best_san != move['san']:
+                        gn.comment+='x'+move['san']
 
+
+            if not gn.variations and not skip:
+
+
+                # TODO look for transpositions!
 
                 if args.MYMOVE=='most_frequent':
                     mov = gn.board().push_san(moves[0]['san'])
@@ -130,26 +128,40 @@ def main():
                 print( '\t',move['san'],int(p*100))
                 if p > (args.UTILITYCUT/100):
                     if not gn.has_variation(mov):
+                        if skip:
+                            continue
                         child = gn.add_variation(mov)
                     else:
                         child=gn.variation(mov)
                     child.proba = p
                     
-           
+         
         # now we can put all the children in the not yet visited list 
+        def check_variation(v):
+            child_fen = v.board().fen() 
+            if child_fen not in fens:
+                fens[child_fen] = v
+                return v
+            else:
+                v.comment += '-> transpose'
+                other = fens[child_fen]
+                other.proba+=v.proba
+                other.comment += '<- incomming'
+                markunseen(other)
+                return other
         
-        return gn.variations
+        return [check_variation(v) for v in gn.variations]
 
-
-
+    def markunseen(gn):
+        for v in gn.variations:
+            fens.pop(v.board().fen(),None)
+            markunseen(v)
 
     # main loop
-    '''
     nodelist =  [game]
     while nodelist: 
         node = nodelist.pop()
         nodelist+=visit(node)
-    '''
     visit(game)
     db.end()
     mydb.end()
