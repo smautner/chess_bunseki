@@ -8,7 +8,6 @@ from collections import defaultdict
 import argparse
 
 
-
 parser = argparse.ArgumentParser() 
 parser.add_argument('-w','--white',dest='COLOR', help= 'is the repertoire for white', type=int, choices=[0,1], required=True)
 parser.add_argument('-i','--pgnfile',dest='PGNFILE', help= 'path to pgn file to parse', type=str, required=True)
@@ -27,6 +26,7 @@ def main():
     game = util.loadpgn(args.PGNFILE) 
     game.proba = 1
     fens = {} # visited
+    not_visited = {}
 
     db = ali.lichess(args)
     if args.DATABASE == 1 and args.SHAREDB == 0:
@@ -48,7 +48,19 @@ def main():
         return gn.ply()% 2 != args.COLOR
 
 
+
+
+
+
+
+
     def visit(gn):
+        '''
+        a visitation does this:
+            1. ask liches whats up (and print status)
+            2. decide if we need to add moves 
+            3. update probabilities of all children
+        '''
 
         fen = gn.board().fen()
         try:
@@ -60,39 +72,44 @@ def main():
         if not moves: # to few moves, i guess
             return []
 
-
-        fens[fen]=1
-        
-        #print()
         print(gn.ply())
         print(gn.board().unicode())
         print ("proba:",gn.__dict__.get("proba","no proba"))
+
+        fens[fen] = gn 
+
         if gn.ply() < args.MINPLY:
-            if myturn(gn):
-                for child in gn.variations:
-                    child.proba = gn.proba
-            else:
-                for move in moves:
-                    mov = gn.board().push_san(move['san'])
-                    if gn.has_variation(mov):
-                        gn.variation(mov).proba =  (bunseki.util.sumdi(move) / movesum) * gn.proba
+            pass 
 
         elif myturn(gn):
             if not gn.variations:
+
                 best_san = util.find_best(moves, gn.ply())
+                '''
+                # could we transpoose to s.th?  
+                # this is a mess.. i should define a move first and then do the other crap..
+                for move in moves: 
+                    mov = gn.board().push_san(move['san'])
+                    b= gn.board()
+                    b.push(mov)
+                    if b.fen() in fens: 
+                        if best_san != move['san']:
+                            gn.comment+='could transition elsewhere via:'+move['san']
+                '''
+
 
                 if args.MYMOVE=='most_frequent':
                     mov = gn.board().push_san(moves[0]['san'])
                     child = gn.add_variation(mov)
                     if best_san != moves[0]['san']:
-                        child.comment = f"better: {best_san}"
+                        child.comment += f"better: {best_san}"
 
 
                 elif args.MYMOVE=='best':
                     mov = gn.board().push_san(best_san)
                     child = gn.add_variation(mov)
                     if best_san != moves[0]['san']:
-                        child.comment = f"most frequent: {moves[0]['san']}"
+                        child.comment += f"popular: {moves[0]['san']}"
 
 
                 elif args.MYMOVE == 'terminate':
@@ -100,38 +117,40 @@ def main():
                         mov = gn.board().push_san(best_san)
                         child = gn.add_variation(mov)
                     else:
-                        gn.comment = f"terminated:{gn.proba*100:.1f}"
-
+                        gn.comment += f"first!=best:{gn.proba*100:.1f}"
                 else:
                     assert False
-
             for child in gn.variations:
                 child.proba = gn.proba
+
         else:
             for move in moves: 
                 p= (bunseki.util.sumdi(move) / movesum) * gn.proba
                 mov = gn.board().push_san(move['san']) 
                 print( '\t',move['san'],int(p*100))
                 if p > (args.UTILITYCUT/100):
-                    if not  gn.has_variation(mov):
-                        gn.add_variation(mov)
-                        print("  addvariation", move['san'])
-                if gn.has_variation(mov):
-                    gn.variation(mov).proba = p
-
-
+                    if not gn.has_variation(mov):
+                        child = gn.add_variation(mov)
+                    else:
+                        child=gn.variation(mov)
+                    child.proba = p
+                    
+           
+        # now we can put all the children in the not yet visited list 
+        
         return gn.variations
 
-    nodelist =  [game]
 
+
+
+    # main loop
+    '''
+    nodelist =  [game]
     while nodelist: 
         node = nodelist.pop()
-        if node.board().fen() in fens:
-            continue
-        else:
-            nodelist+=visit(node)
-
-
+        nodelist+=visit(node)
+    '''
+    visit(game)
     db.end()
     mydb.end()
     print(game)
