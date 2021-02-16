@@ -26,17 +26,27 @@ parser.add_argument('--min-ply',dest='MINPLY', help= 'dont show alternatives for
 
 
 desired= 'd4 Nf3 g3 Bg2 O-O'.split()
-depth = 20
-stockfish = Stockfish('/home/ikea/projects/strat_game/chess/stockfish209',depth = depth,parameters={"Threads": 8})
+depth = 26
+stockfish = Stockfish('/home/ikea/projects/strat_game/chess/stockfish209',depth = depth,parameters={"Threads": 8, "Hash":64})
 enginecache = util.cacher(f"{depth}")
+enginecache2 = util.cacher(f"best{depth}")
 
 def get_eval_uncached(fen):
     stockfish.set_fen_position(fen)
     res= stockfish.get_evaluation()
     return res['value']/100
 
+def get_best_uncached(fen):
+    stockfish.set_fen_position(fen)
+    res= stockfish.get_best_move()
+    return res
+
 def get_eval(fen):
    return  enginecache.call(lambda: get_eval_uncached(fen), fen)
+
+def get_best(fen):
+   return  enginecache2.call(lambda: get_best_uncached(fen), fen)
+
 
 
 
@@ -132,29 +142,42 @@ def main():
                 want_move = desired[movenum]
 
             if not gn.variations and not skip:
+                    
 
-                    # a) there is no want_move
-                    # -> use best move
+                    # new logic:
+                    # if want move:
+                    #    same as best: do it
+                    #    illigal: best 
+                    #    legal: cmp
+                    # else:
+                    #    choose engine move
 
-                    # b) there is a want want_move 
-                    # -> calculate loss and decide accordingly
-                    if want_move == '' or want_move == best_san or illegal(want_move, gn.board()):
-                        mov = gn.board().push_san(best_san)
-                        child = gn.add_variation(mov)
-                    else: 
-                        b1,b2 = gn.board(),gn.board()
-                        b1.push_san(best_san)
-                        b2.push_san(want_move)
-                        f1, f2 = b1.fen(), b2.fen()
-                        f1s = get_eval(f1)
-                        f2s = get_eval(f2)
-                        if f1s > f2s+.35:
-                            domove = best_san
+
+                    if want_move:
+                        if want_move == best_san or illegal(want_move, gn.board()):
+                            mov = gn.board().push_san(best_san)
+                            child = gn.add_variation(mov)
                         else:
-                            domove = want_move
-                        mov = gn.board().push_san(domove)
-                        child = gn.add_variation(mov)
-                        child.comment  = f'theirs:{f1s}  mine:{f2s}'
+                            b1,b2 = gn.board(),gn.board()
+                            b1.push_san(best_san)
+                            b2.push_san(want_move)
+                            f1, f2 = b1.fen(), b2.fen()
+                            f1s = get_eval(f1)
+                            f2s = get_eval(f2)
+                            if f1s > f2s+.35:
+                                domove = best_san
+                            else:
+                                domove = want_move
+                            mov = gn.board().push_san(domove)
+                            child = gn.add_variation(mov)
+                            child.comment  = f'theirs:{f1s}  mine:{f2s}'
+                    else:
+                        muci = get_best(gn.board().fen())
+                        print("MUCI",muci)
+                        best_mv = chess.Move.from_uci(muci)
+                        #mov = gn.board().push(best_mv)
+                        child = gn.add_variation(best_mv)
+
  
         else:
             second_border = bunseki.util.sumdi(moves[0])*.333
@@ -178,6 +201,7 @@ def main():
     db.end()
     mydb.end()
     enginecache.write()
+    enginecache2.write()
     print(game)
     
     
