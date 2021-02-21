@@ -134,8 +134,8 @@ def find_best(moves, ply):
     them = 'white'
     if (ply + 1) % 2:
         us, them = them, us
-    sum = max(sumdi(moves[0]), 100)
-    score_mv = lambda m: (m[us] - m[them]) / sumdi(m) if sumdi(m) > .2*sum else -99999
+    min_played = max(sumdi(moves[0])*.05, 100)
+    score_mv = lambda m: (m[us] - m[them]) / sumdi(m) if sumdi(m) > min_played else -99999
     best = max(moves, key=score_mv)
     return best['san']
 

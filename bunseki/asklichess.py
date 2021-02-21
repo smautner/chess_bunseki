@@ -56,8 +56,8 @@ class lichess2:
         self.hasher = util.cacher( dbstring )
         # letd parse the dbstring...
         self.master = 'master' in dbstring
-        self.TIMECTL = [item  for item in '1600 1800 2000 2200 2500'.split() if item in dbstring   ]
-        self.STRENGTH = [item  for item in 'blitz rapid bullet classical'.split() if item in dbstring   ]
+        self.STRENGTH = [item  for item in '1600 1800 2000 2200 2500'.split() if item in dbstring   ]
+        self.TIMECTL = [item  for item in 'blitz rapid bullet classical'.split() if item in dbstring   ]
     
     def end(self):
         self.hasher.write()

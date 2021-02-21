@@ -110,24 +110,22 @@ def main():
 
             if gn.variations:
                 if not gn.has_variation(mov) and best_san_valid:
-                    gn.comment+=f" better:{best_san}"
+                    gn.variations[0].comment+=f" better:{best_san}"
 
             elif best_san_valid and not args.NOTE:
                 gn.add_variation(mov)
-        else:
+        elif not skip:
             second_border = bunseki.util.sumdi(moves[0])*.2
             for move in moves: 
                 freq = bunseki.util.sumdi(move)
                 if freq > args.UTILITYCUT and freq > second_border: 
-
                     mov = gn.board().push_san(move['san']) 
                     if not gn.has_variation(mov):
                         # move is not yet in the list and noteworthy
                         if args.NOTE:
                             gn.comment+=f" -> {move['san']}"
                         else:
-                            if not skip:
-                                gn.add_variation(mov)
+                            gn.add_variation(mov)
         
         return gn.variations
 
