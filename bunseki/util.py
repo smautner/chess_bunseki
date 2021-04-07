@@ -1,3 +1,8 @@
+
+##############
+# mostly contains utils concerning the pychess module
+##################
+
 # based on https://github.com/permutationlock/merge-pgn
 import chess.pgn
 import sys
@@ -51,14 +56,6 @@ def loadpgn(filename, maxread=999):
     return game
 
 
-def getimportance(node):
-    res = 1
-    while node.parent:
-        res*= node.proba
-        node = node.parent
-    return res
-
-
 def history(node):
     r=[]
     while node.parent:
@@ -76,7 +73,54 @@ def pgn(node):
 
 
 
+def find_best(moves, ply):
+    # returns the best move, most played or ''
+    us = 'black'
+    them = 'white'
+    if (ply + 1) % 2:
+        us, them = them, us
+    min_played = max(sumdi(moves[0])*.05, 100)
+    score_mv = lambda m: (m[us] - m[them]) / sumdi(m) if sumdi(m) > min_played else -99999
+    best = max(moves, key=score_mv)
+    return best['san']
+
+
+def illegal(san,board):
+    try:
+        board.push_san(san)
+    except:
+        return True
+    return False
+
+    
+def split_ply(game,ply): 
+    # find nodes at a certain ply: 
+    roots=[]
+    def find_n(gn): 
+        if gn.ply() == where: 
+            roots.append(gn)
+        else:
+            for v in gn.variations:
+                find_n(v)
+    find_n(game) 
+    games = [mkgame(game,r) for r in roots]
+
+def mkgame(game,r):
+    history = util.history(r)
+    game = chess.pgn.Game()
+    node = game
+    print(history[:-1])
+    for move in history[:-1]: 
+        node = node.add_variation(chess.Move.from_uci(move))
+    node.variations = [r]
+        
+    return game
+
+#####################
+# this is just the cacher, if i  get more generic utils there will be a new file
+#####################
 class cacher():
+
     def __init__(self,cachename): 
         self.cachename = f".{cachename}"
         if os.path.exists(self.cachename): 
@@ -96,49 +140,4 @@ class cacher():
         return r
 
 
-'''
-def find_lemons(moves, ply):
-    # checks if the most popular move is not the best in win percentage
-    # (compared to a move at least 20% played)
 
-    us = 'black'
-    them = 'white'
-
-    if (ply+1) % 2:
-        us, them = them,us
-    score_mv = lambda m: (m[us]-m[them]) / sumdi(m)
-    score = score_mv(moves[0])
-    sum = max(sumdi(moves[0]), 100)
-    if Z:=[ e for e in moves[1:] if sumdi(e) > sum*.2  and score_mv(e) > score  ]:
-        return "there might be a better move"+str([ z['san'] for z in Z])
-    return ''
-
-
-def find_best(moves, ply):
-    # returns the best move, most played or ''
-
-    us = 'black'
-    them = 'white'
-    if (ply + 1) % 2:
-        us, them = them, us
-    sum = max(sumdi(moves[0]), 100)
-    score_mv = lambda m: (m[us] - m[them]) / sumdi(m) if sumdi(m) > .2*sum else -99999
-    best = max(moves, key=score_mv)
-    return best['san'], '' if best['san'] == moves[0]['san'] else f"most played is {moves[0]['san']}"
-'''
-
-def find_best(moves, ply):
-    # returns the best move, most played or ''
-
-    us = 'black'
-    them = 'white'
-    if (ply + 1) % 2:
-        us, them = them, us
-    min_played = max(sumdi(moves[0])*.05, 100)
-    score_mv = lambda m: (m[us] - m[them]) / sumdi(m) if sumdi(m) > min_played else -99999
-    best = max(moves, key=score_mv)
-    return best['san']
-
-
-def sumdi(di):
-    return di['black']+di['white']+di['draws']

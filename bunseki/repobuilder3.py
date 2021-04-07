@@ -1,51 +1,16 @@
 import chess.pgn
 from copy import deepcopy
 from types import SimpleNamespace
-
-
 import chess
 import bunseki.util
 import bunseki.util as util
 import bunseki.asklichess as ali
 from collections import defaultdict 
-import argparse
-
-
-parser = argparse.ArgumentParser() 
-parser.add_argument('--black',dest='COLOR', help= 'is the repertoire for white',action='store_false')
-parser.add_argument('--pgn',dest='PGNFILE', help= 'path to pgn file to parse', type=str, default= '')
-parser.add_argument('--cut',dest='UTILITYCUT', help= 'stop at this many moves played  ', type=float, default = 1000)
-parser.add_argument('--min-ply',dest='MINPLY', help= 'dont show alternatives for the first plies', type=int, default = -1)
-parser.add_argument('--annotate',dest='NOTE', help= 'annotation only! add no moves',action='store_true')
-
-
-parser.add_argument('--mydb',dest='mydb', help='', type = str, default = 'master')
-parser.add_argument('--aite',dest='aite', help='', type = str, default = 'blitz_rapid_2200_2500')
-
-
-def get_eval(fen):
-   return  enginecache.call(lambda: get_eval_uncached(fen), fen)
-
-def get_best(fen):
-   return  enginecache2.call(lambda: get_best_uncached(fen), fen)
-
-
-
-
-def illegal(san,board):
-    try:
-        board.push_san(san)
-    except:
-        return True
-    return False
-
 
 
 lalala = 65
 
 def main(): 
-    args = parser.parse_args()
-    masterarg= SimpleNamespace(DATABASE=0)
     game = util.loadpgn(args.PGNFILE) #if args.PGNFILE else chess.pgn.Game() 
     fens = {} # known gamenodes
 
@@ -92,8 +57,13 @@ def main():
             db.end()
             mydb.end()
             assert False, 'sending requests too fast probably'
+
         if not moves: # to few moves, i guess
             return []
+
+
+
+
 
         print(gn.ply())
         print(gn.board().unicode(invert_color=True))
@@ -114,6 +84,8 @@ def main():
 
             elif best_san_valid and not args.NOTE:
                 gn.add_variation(mov)
+
+
         elif not skip:
             second_border = bunseki.util.sumdi(moves[0])*.2
             for move in moves: 
@@ -139,40 +111,6 @@ def main():
     mydb.end()
     print(game)
     
-    '''
-    def split_ply(game,where): 
-        # find nodes at a certain ply: 
-        roots=[]
-        def find_n(gn): 
-            if gn.ply() == where: 
-                roots.append(gn)
-            else:
-                for v in gn.variations:
-                    find_n(v)
-        find_n(game) 
-        games = [mkgame(game,r) for r in roots]
-        return games
-
-
-
-    games = split_ply(game,7)
-    print (f"where are this many games: {len(games)}")
-    for game in games:
-        print()
-        print (game)
-    '''
-
-
-def mkgame(game,r):
-    history = util.history(r)
-    game = chess.pgn.Game()
-    node = game
-    print(history[:-1])
-    for move in history[:-1]: 
-        node = node.add_variation(chess.Move.from_uci(move))
-    node.variations = [r]
-        
-    return game
     
 
 
