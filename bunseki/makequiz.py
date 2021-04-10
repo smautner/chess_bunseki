@@ -1,11 +1,7 @@
 
-
-import util
+import pprint  as p 
+from bunseki import util
 import basics as ba
-game = util.loadpgn("garbo.pgn")
-data = {} # fen:{q:board, a:variation}
-color = 'white'
-sort = 0 
 
 def decorate_unicode(board): 
     print(b)
@@ -13,26 +9,31 @@ def decorate_unicode(board):
     for e in b.split('\n'):
         print(list(e))
 
-def add_to_data(gn): 
-    global sort
+def add_to_data(gn, color): 
     # is it our turn? 
     # if so data[fen] = {q:q, a:a}
     if gn.ply() % 2 == (color=='black'): 
-        b = gn.board().unicode(invert_color=True)
         if gn.variations:
             mv = gn.variations[0].move.uci()
-            data [hash(gn.board().fen())] = {'q':b, 'a':mv, 'sort':sort}
+            return gn, mv
+    return False,False
+
+
+def makequiz(color,inpgn, outdeck):
+    game = util.loadpgn(inpgn)
+    nodes = [game]
+    data = {} # fen:{q:board, a:variation}
+    sort = 0 
+    while nodes: 
+        n = nodes.pop()
+        gn,mv = add_to_data(n, color)
+        if gn:
+            b = gn.board().unicode(invert_color=True)
+            data[hash(gn.board().fen())] = {'q':b, 'a':mv, 'sort':sort}
             sort+=1
 
+        nodes+=n.variations
 
-
-nodes = [game]
-while nodes: 
-    n = nodes.pop()
-    add_to_data(n)
-    nodes+=n.variations
-
-import pprint  as p 
-p.pprint(data)
-ba.jdumpfile(data,"/home/ikea/garbo.deck")
+    p.pprint(data)
+    ba.jdumpfile(data,outdeck)
 
