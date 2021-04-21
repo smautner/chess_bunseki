@@ -4,12 +4,27 @@ from bunseki import util
 import basics as ba
 
 
+#########
+#    replaces all sqares that are empty with an square in foreground
+##########
+def decorate_unicode(b,color): 
+
+    boardlines = [] 
+    for i,line  in enumerate(b.split('\n')):
+        newline = [ putthis(i,e,symbol)  for e, symbol in enumerate(line)  ]
+        boardlines.append(''.join(newline))
+
+    if color == 'black':
+        boardlines.reverse()
+        boardlines = [ s[::-1] for s in boardlines]
+    board = "\n".join(boardlines)
+    print(board)
+    return board
 
 def putthis(bline,sq,symbol):
-
     sq_b ="▢"
     sq_b= '□'
-    sq_w ='■' 
+    sq_w ='■'
 
     #sq_b=' '
 
@@ -21,18 +36,45 @@ def putthis(bline,sq,symbol):
             ret = sq_w 
     return ret
 
+################
+# REALCOLORIZE 
+############### 
 
-def decorate_unicode(b,color): 
-
-    boardlines = [] 
-    for i,line  in enumerate(b.split('\n')):
-        newline = [ putthis(i,e,symbol)  for e, symbol in enumerate(line)  ]
-        boardlines.append(''.join(newline))
-
+def decorate_unicode_2(b,color): 
+    
+    board = b.split('\n')
     if color == 'black':
-        boardlines.reverse()
-        boardlines = [ s[::-1] for s in boardlines]
-    return "\n".join(boardlines)
+        board.reverse()
+        board = [ s[::-1] for s in board]
+
+    board = [transformline(i+(color=='black'),e) for i,e in enumerate(board)]
+
+    board = "\n".join(board)
+    print(board)
+    print()
+    return board
+
+def transformline(i,bline):
+
+    cend =  '\x1b[0m'
+    rline = ''
+    for idd,sym in enumerate(bline.split()):
+        if sym == 'x': 
+            sym = ' '
+
+        if (idd+i) % 2:
+            item = '\x1b[1;30;47m'+sym+" "+cend
+        else:
+            item = '\x1b[1;30;43m'+sym+' '+cend
+
+        rline += item
+
+    rline += cend
+    return rline
+
+###############
+# QUIZ MAKER
+####################
         
 
 def add_to_data(gn, color): 
@@ -55,12 +97,12 @@ def makequiz(color,inpgn, outdeck):
         gn,mv = add_to_data(n, color)
         if gn:
             b = gn.board().unicode(invert_color=True, empty_square='x')
-            b = decorate_unicode(b,color= color)
+            b = decorate_unicode_2(b,color= color)
             data[hash(gn.board().fen())] = {'q':b, 'a':mv, 'sort':sort}
             sort+=1
 
         nodes+=n.variations
 
-    p.pprint(data)
+    #p.pprint(data)
     ba.jdumpfile(data,outdeck)
 
