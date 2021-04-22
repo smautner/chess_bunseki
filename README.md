@@ -68,4 +68,10 @@ $bunseki_repobuilder -i black_auto.pgn -w 0 -u 2 -d 1 -c 0
 * i would have liked to use UCI notation to communicate between python-chess and lichess
 but they use different notation for castles.
 
-* python-chess requires python >= 3.7
+
+
+# terminal printing 
+
+see makequiz on how to print theese:
+
+![examample output](board.png)
