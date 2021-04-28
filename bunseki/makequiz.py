@@ -47,7 +47,7 @@ def decorate_unicode_2(b,color):
         board.reverse()
         board = [ s[::-1] for s in board]
 
-    board = [transformline(i+(color=='black'),e) for i,e in enumerate(board)]
+    board = [transformline(i+1,e) for i,e in enumerate(board)]
 
     board = "\n".join(board)
     print(board)
@@ -96,7 +96,7 @@ def makequiz(color,inpgn, outdeck):
         n = nodes.pop()
         gn,mv = add_to_data(n, color)
         if gn:
-            b = gn.board().unicode(invert_color=True, empty_square='x')
+            b = gn.board().unicode(invert_color=False, empty_square='x')
             b = decorate_unicode_2(b,color= color)
             data[hash(gn.board().fen())] = {'q':b, 'a':mv, 'sort':sort}
             sort+=1
