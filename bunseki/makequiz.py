@@ -1,4 +1,3 @@
-
 import pprint  as p 
 from bunseki import util
 import basics as ba
@@ -106,3 +105,13 @@ def makequiz(color,inpgn, outdeck):
     #p.pprint(data)
     ba.jdumpfile(data,outdeck)
 
+
+if __name__ == "__main__":
+    import dirtyopts as opts
+    doc='''
+    --color str white
+    --inpgn str myfile.pgn
+    --outdeck str quiz.json
+    '''
+    args = opts.parse(doc).__dict__
+    makequiz(**args)
