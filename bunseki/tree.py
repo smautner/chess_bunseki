@@ -5,7 +5,6 @@
 import requests as req
 import time
 import bunseki.util as util
-from bunseki.util import sumdi
 
 session = req.Session()
 

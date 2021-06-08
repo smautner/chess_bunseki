@@ -9,6 +9,8 @@ import sys
 import chess
 import os 
 import pickle
+
+from bunseki.tree import sumdi
 def merge(games):
     master_node = chess.pgn.Game()
 
@@ -79,7 +81,7 @@ def find_best(moves, ply):
     them = 'white'
     if (ply + 1) % 2:
         us, them = them, us
-    min_played = max(sumdi(moves[0])*.05, 100)
+    min_played = max(sumdi(moves[0])*.15, 100)
     score_mv = lambda m: (m[us] - m[them]) / sumdi(m) if sumdi(m) > min_played else -99999
     best = max(moves, key=score_mv)
     return best['san']

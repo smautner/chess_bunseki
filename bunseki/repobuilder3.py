@@ -4,14 +4,28 @@ from types import SimpleNamespace
 import chess
 import bunseki.util
 import bunseki.util as util
-import bunseki.asklichess as ali
+import bunseki.tree as tree
 from collections import defaultdict 
+import dirtyopts
+
+docs = '''
+--color str white assert white black
+--pgn str 
+--cut int 1000
+--minply int 0
+
+--dbus str+ 2200 2500 blitz rapid classical
+--dbthem str+ 2200 2500 blitz rapid classical
+'''
+
+
 
 
 lalala = 65
 
 def main(): 
-    game = util.loadpgn(args.PGNFILE) #if args.PGNFILE else chess.pgn.Game() 
+    args = dirtyopts.parse(docs)
+    game = util.loadpgn(args.pgn) #if args.pgn else chess.pgn.Game() 
     fens = {} # known gamenodes
 
     def getjmp():
@@ -19,16 +33,16 @@ def main():
         r = f"#{chr(lalala)}#"
         lalala +=1
         return r
-
-    mydb = ali.lichess2(args.mydb)
-    if args.aite == args.mydb:
+    
+    mydb = tree.lichess(args.dbus)
+    if args.dbus == args.dbthem:
         db = mydb
     else:
-        db = ali.lichess2(args.aite)
+        db = tree.lichess2(args.dbthem)
         
 
     def myturn(gn):
-        return gn.ply()% 2 != args.COLOR
+        return gn.ply()% 2 != (args.color == 'white')  
 
     def visit(gn):
         '''
@@ -69,7 +83,7 @@ def main():
         print(gn.board().unicode(invert_color=True))
 
 
-        skip =  gn.ply() < args.MINPLY
+        skip =  gn.ply() < args.minply
 
         if myturn(gn) and not skip:
                 
@@ -82,22 +96,19 @@ def main():
                 if not gn.has_variation(mov) and best_san_valid:
                     gn.variations[0].comment+=f" better:{best_san}"
 
-            elif best_san_valid and not args.NOTE:
+            elif best_san_valid:
                 gn.add_variation(mov)
 
 
         elif not skip:
-            second_border = bunseki.util.sumdi(moves[0])*.2
+            second_border = tree.sumdi(moves[0])*.2
             for move in moves: 
-                freq = bunseki.util.sumdi(move)
-                if freq > args.UTILITYCUT and freq > second_border: 
+                freq = tree.sumdi(move)
+                if freq > args.cut and freq > second_border: 
                     mov = gn.board().push_san(move['san']) 
                     if not gn.has_variation(mov):
                         # move is not yet in the list and noteworthy
-                        if args.NOTE:
-                            gn.comment+=f" -> {move['san']}"
-                        else:
-                            gn.add_variation(mov)
+                        gn.add_variation(mov)
         
         return gn.variations
 
