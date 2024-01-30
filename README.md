@@ -2,9 +2,17 @@
 
 # what is this
 
+
 You have a chess repertoire pgn file and want to know where it could be improved.
-This scripts checks your oponents responses against the most played moves
-on the lichess database.
+We should find possition where there are likely and unaccounted opponent moves.
+Unaccounted moves are easy to spot in the database. Determining the likelyhood is harder. 
+One could count the occurance of possitions in the database and compare to the total number of games
+but that neglects that on our turn, we choose few moves and reduce the space accordingly.
+
+
+This scripts uses the lichess database to calculate likelyhood of possitions and 
+look at the opponent move distributions in that possition to make suggestions
+on where to enhance a repertoire.
 
 
 # usage
